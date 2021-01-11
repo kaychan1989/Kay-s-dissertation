@@ -1,0 +1,129 @@
+---
+title: "Interaction visuals"
+author: "Kay chansiri"
+date: "1/11/2021"
+output: html_document
+---
+
+I use my dissertation as the data set here 
+
+```{r}
+library(foreign)
+library(ggplot2)
+data<-read.spss("TIM.sav", use.value.labels = TRUE,to.data.frame = TRUE)
+
+```
+
+Create a scatter plot  
+```{r}
+ggplot(data, aes(x = BPD, y = data$Empowerment_ExpectationSupport))+geom_point(color = "grey70")
+```
+
+I feel like the visual is not that clear and does not tell much about the relationship between x and y
+
+Let's try red
+
+```{r}
+ggplot()+geom_point(mapping = aes(x = data$BPD, y = data$Empowerment_ExpectationSupport), color = "red")
+```
+
+
+As the data is so large, I will select only column that I want:
+
+```{r}
+data = subset(data, select = c(1:36))
+#See the frist and last six rows of data 
+#you can change to be the first and last n rows using head(data, n = 10L) #for first ten rows
+head(data,  )
+tail(data,  )
+```
+
+Two-way interaction plot: BPD*condition ->traumaKnowledge
+
+```{r}
+#factor the moderator
+data$Condition = as.factor(data$Condition)
+is.factor(data$Condition)
+ggplot(data = data)+geom_point((mapping =aes(x = BPD, y = Trauma_Knowledge, color = Condition)))
+```
+
+Still it's hard to see groupping and also there is no label on the x-axis
+
+We can use size instead of color to see if we would see our interaction better 
+
+```{r}
+ggplot() + geom_point(mapping = aes(x =data$BPD, y = data$Trauma_Knowledge, size = data$Condition))
+```
+Alternative command for the above if you dont want to type data$ in front of every variale
+you would get a wardning that "	
+Using size for a discrete variable is not advised."
+
+
+```{r}
+ggplot(data = data) + geom_point(mapping = aes(x =BPD, y = Trauma_Knowledge, size = Condition))
+```
+
+we could see a bit clearer that people who are in the condition 1 have more knowledge but we are not sure yet how would it be related to BPD
+
+Let's try using transparency to represent our moderator
+```{r}
+ggplot(data = data) + 
+  geom_point(mapping = aes(x = BPD, y = Trauma_Knowledge, alpha = Condition))
+```
+
+We got the same warning and also there are only two levels of our condition so it does not help using transparency. Let's try using continuous moderator (NFC) and new outcome (self-compassion)
+```{r}
+ggplot(data = data) + 
+  geom_point(mapping = aes(x = BPD, y = SelfCompassion, alpha = NFC))
+```
+
+Hard to see the transparency on all grey black shade.
+
+Let's use Shape to represent our moderator.FYI: the maximum that R allows us to use is six shapes
+
+For shape, let's get back to use our categorical IV (Condition)
+```{r}
+
+ggplot(data = data) + 
+  geom_point(mapping = aes(x = BPD, y = Empowerment_ExpectationSupport, shape = Condition))
+```
+Does not really help. Hard to separte the triable and circles 
+
+Let's see if we want to categorize our continuous moderator and represent what is below and above the cut point -- I personally dont recommend this. For example,  If we want to see only people who have low NFC scores. IV = BPD, DV = selfcompassion 
+
+```{r}
+ggplot(data = data) + 
+  geom_point(mapping = aes(x = BPD, y = SelfCompassion, color = NFC<3))
+```
+You can also use facet to present your interaction. The moderator should be categorical though
+```{r}
+ggplot(data = data) + 
+  geom_point(mapping = aes(x = BPD, y = Trauma_Knowledge)) + 
+  facet_wrap(~Condition, nrow = 2)
+```
+Not that useful I feel: Dont really see the pattern across two experimental groups using geom_point
+
+You can even do a three way interaction: BPDxconditionxFI -- think twice though if you really want to categorize your continuous moderator
+```{r}
+ggplot(data = data) + 
+  geom_point(mapping = aes(x = BPD, y = data$Self_relevance)) + 
+  facet_grid(data$Condition ~ data$FI)
+```
+You can also use facet_grid for a two way interaction as well. Keeping only FI and want that to be on the x axis. 
+
+
+```{r}
+ggplot(data = data) + 
+  geom_point(mapping = aes(x = BPD, y = data$Self_relevance)) + 
+  facet_grid(. ~ data$FI)
+
+```
+
+
+You can even have FI to be on the Y aixs
+```{r}
+ggplot(data = data) + 
+  geom_point(mapping = aes(x = BPD, y = data$Self_relevance)) + 
+  facet_grid(data$FI ~ .)
+```
+Both visuals are bad though -- the labels are so messed up
